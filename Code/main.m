@@ -1,6 +1,9 @@
 % Defines the scenario you want to run, invokes functions to solve the problem and plot the solution.
 clear; clc; close all;
 
+%% Add paths
+addpath(genpath(fullfile(pwd, 'YALMIP-master')));
+
 %% Task definition
 
 task                 = struct;
@@ -52,15 +55,16 @@ if task.adjacentveh2
     task.A2.y0       = 1.5*task.road.lanewidth;               % [m] initial lateral position
 end
  
-%% 
+%% Model Predictive Control (MPC)
 
-Ego_pos = [];
+egoPos = [];
 numSteps = 1;
 
 for i=1:numSteps
     init;
     
     res = yalmipsolve(task);                                % Optimal overtaking maneuver
+    
     task.dt = res.t(end)/task.N;
     task.t = (0:task.dt:res.t(end))';
     res_follow=yalmipsolve_follow(task);
@@ -108,8 +112,9 @@ for i=1:numSteps
 end
 
 %% Backup
+
 % if i == 1 || i==20
-% 
+%     
 %     plotting(task, res, Ax, Ay)
 %     if i==1
 %         try_1 = res;
@@ -119,7 +124,7 @@ end
 %     end
 % end
 % % Test (remove)
-% Ego_pos(end+1) = task.E.y0;
+% egoPos(end+1) = task.E.y0;
 % % Update
 % task.E.vref=task.E.vref(2:end); % ref
 % task.E.vy0 = res.vEy(2);
@@ -127,7 +132,7 @@ end
 % % Troubleshooting y-axis for host
 % 
 % task.E.y0 = y_traj(i);
-% task.N=task.N-1; 
+% task.N=task.N-1;
 % task.E.horizon=task.E.horizon-1;  %[m] Length of prediction horizon                                 %[m] Length of prediction horizon
 % 
 % % Leading veh update
@@ -136,3 +141,6 @@ end
 % % Adjacent veh update
 % task.A.x0 = task.A.x0 - res.xE(2);
 % %task.A.y0 = task.A.y0 - res.yE(2); %If host-vehicle fixed in origo
+
+%% Remove added paths
+rmpath(genpath(fullfile(pwd, 'YALMIP-master')));
