@@ -12,7 +12,6 @@ function res=solveFollow(task)
 dt = task.dt;
 N = task.N;
 yr = task.E.yref;
-vL = task.L.vx;
 vr = task.E.vref;
 
 %% Yalmip
@@ -23,17 +22,15 @@ y = sdpvar(N,1);
 vx = sdpvar(N,1);
 
 % Inputs
-ax=sdpvar(N-1,1);
-vy=sdpvar(N-1,1);
+ax = sdpvar(N-1,1);
+vy = sdpvar(N-1,1);
 
 % Variables for cost fcn
-dax=(ax(2:end)-ax(1:end-1))/dt;                                 % derivative on acc in x
-ay=(vy(2:end)-vy(1:end-1))/dt;                                  % acc in y
+dax = diff(ax)/dt;                                          % derivative on acc in x
+ay = diff(vy)/dt;                                           % acc in y
 
-k=1;
-solvertime=0;
-
-options = sdpsettings('solver','QuadProg','verbose',3);
+solvertime = 0;
+options = sdpsettings('solver', 'QuadProg', 'verbose', 3);
 
 %% Objective / cost function
 
@@ -41,27 +38,26 @@ options = sdpsettings('solver','QuadProg','verbose',3);
 q1 = 1;
 q2 = 1;
 q3 = 1;
-q4 = 1;
+q4 = 1;     % Try 0 here
 q5 = 1;
-q6 = 1;
+q6 = 1;     % Try 0 here
 
 cost = (sum((vx-(vr-task.L.vx)).^2)*q1 + (sum((y-yr).^2))*q2 ...
-    + sum(ax.^2)*q3 + sum(vy.^2)*q4 ...
-    + sum(dax.^2)*q5 + sum(ay.^2)*q6);
+        + sum(ax.^2)*q3 + sum(vy.^2)*q4 + sum(dax.^2)*q5 + sum(ay.^2)*q6);
 
 %% Equality Constraints - system dynamics - C1
 
 C1=[...
-    x(2:N)==x(1:N-1) + vx(1:N-1)*dt...
-    vx(2:N)==vx(1:N-1) + ax(1:N-1)*dt...
-    y(2:N)==y(1:N-1)+vy(1:N-1)*dt...
+    x(2:N) == x(1:N-1) + vx(1:N-1)*dt...
+    vx(2:N) == vx(1:N-1) + ax(1:N-1)*dt...
+    y(2:N) == y(1:N-1) + vy(1:N-1)*dt...
     ];
 
 %% Inequality constraints - C2
 
 C2=[...
     x <= -task.L.longsafetymargin ...
-    vx <= -x/dt ...
+    vx <= -x/dt ...                                         % No lower bound set to 0 to allow for backup in aborted lane changes
     y <= task.zone.ymax ...
     vy >= task.E.vymin ...                                  % maybe include speed dependent
     vy <= 0 ...                                             % To only allow right turns, otherwise: task.E.vymax ...
@@ -73,7 +69,7 @@ C2=[...
     vy(1) == task.E.vy0 ...
     ];
     
-C=[C1 C2];
+C = [C1 C2];
 
 %% Optimisation and population of output struct
 
@@ -90,6 +86,4 @@ res.vEy = [value(vy); value(vy(N-1))];                      %[m/s] lateral speed
 res.ts = ones(N,1)*dt;                                      %[s] time samples
 res.t = [0;cumsum(res.ts(1:N-1))];                          %[s] travel time
 res.xE = value(x);                                          %[m] longitudinal position
-%res.topt=value(t)*St;
 res.weights = [q1 q2 q3 q4 q5 q6];
-%res.z=value(z*Sz);
