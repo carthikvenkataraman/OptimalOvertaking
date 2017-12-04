@@ -26,3 +26,7 @@ speedAdjVeh1 = 75/3.6;          % Speed of 1st adjacent vehicle in m/s
 isAdjVeh2 = false;
 posAdjVeh2 = -50;               % Position of 2nd adjacent vehicle wrt ego in m
 speedAdjVeh2 = 75/3.6;          % Speed of 2nd adjacent vehicle in m/s
+
+%% Weights for decision comparison cost
+w = ones(1,6);
+w(3) = 0; w(5) = 0;

@@ -57,10 +57,10 @@ C1=[...
 
 C2=[...
     x <= -task.L.longsafetymargin ...
-    vx <= -x/dt ...                                         % No lower bound set to 0 to allow for backup in aborted lane changes
+    vx <= -x/dt ...                                                         % No lower bound set to 0 to allow for backup in aborted lane changes
     y <= task.zone.ymax ...
-    vy >= task.E.vymin ...                                  % maybe include speed dependent
-    vy <= 0 ...                                             % To only allow right turns, otherwise: task.E.vymax ...
+    vy >= task.E.vymin ...                                                  % maybe include speed dependent
+    vy <= 0 ...                                                             % To only allow right turns, otherwise: task.E.vymax ...
     x(1) == task.E.x0 - task.L.x0...
     vx(1) == task.E.vx0 - task.L.vx...
     vx(N) == 0 ...
@@ -74,16 +74,21 @@ C = [C1 C2];
 %% Optimisation and population of output struct
 
 
-resOpt = optimize(C,cost,options);
+resOpt      = optimize(C,cost,options);
 
-res = struct;
-res.status = resOpt;
+res         = struct;
+res.status  = resOpt;
 res.solvertime = solvertime;
 res.cost.total = value(cost);
-res.yE = value(y);                                          %[m] lateral position
-res.vEx = value(vx);                                        %[m/s] longitudinal speed
-res.vEy = [value(vy); value(vy(N-1))];                      %[m/s] lateral speed
-res.ts = ones(N,1)*dt;                                      %[s] time samples
-res.t = [0;cumsum(res.ts(1:N-1))];                          %[s] travel time
-res.xE = value(x);                                          %[m] longitudinal position
+res.yE      = value(y);                                                     %[m] lateral position
+res.vEx     = value(vx);                                                    %[m/s] longitudinal speed
+res.vEy     = [value(vy); value(vy(N-1))];                                  %[m/s] lateral speed
+res.ts      = ones(N,1)*dt;                                                 %[s] time samples
+res.t       = [0;cumsum(res.ts(1:N-1))];                                    %[s] travel time
+res.xE      = value(x);                                                     %[m] longitudinal position
 res.weights = [q1 q2 q3 q4 q5 q6];
+res.Ax      = diff(res.vEx)./diff(res.t);
+res.Ax      = [res.Ax; res.Ax(end)];
+res.Ay      = diff(res.vEy)./diff(res.t);
+res.Ay      = [res.Ay; res.Ay(end)];
+res.Jx      = diff(res.Ax)./diff(res.t);
