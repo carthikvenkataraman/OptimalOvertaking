@@ -93,7 +93,7 @@ for i=1:numSteps
         
     if followCost - overtakeCost > eps(followCost)
         robustness = robustness+1;
-        if robustness == 5;
+        if robustness >= 5;
             decision = overtake;
         else
             decision = follow;
