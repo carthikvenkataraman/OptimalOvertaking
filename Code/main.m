@@ -95,6 +95,8 @@ for i=1:numSteps
         robustness = robustness+1;
         if robustness == 5;
             decision = overtake;
+        else
+            decision = follow;
         end
     else        
         decision = follow;
