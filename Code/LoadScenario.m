@@ -4,7 +4,7 @@ speedLimit = 120/3.6;           % Speed limit on road in m/s
 
 horizon = 150;                  % Prediction horizon in m
 numSamples = 181;               % Number of samples
-numSteps = 1;                   % Number of steps in MPC to perform
+numSteps = 2;                   % Number of steps in MPC to perform
 
 %% Ego vehicle
 
