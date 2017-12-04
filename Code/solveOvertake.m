@@ -34,9 +34,9 @@ St   = task.s(end)/vrmean*1.5;
 
 %% Penalties
 
-Wdx  =0.01*vrmean;
-WF=2/vrmean;
-Wdddx=100/vrmean^3;                                   % Initial time domain weights
+Wdx = 0.01*vrmean;
+WF = 2/vrmean;
+Wdddx = 100/vrmean^3;                                   % Initial time domain weights
 
 Wz=Wdx*vrmean^3;
 Wy=0.1;
@@ -66,7 +66,7 @@ else
     t = zeros(N,1);
 end
 
-options = sdpsettings('solver','QuadProg','verbose',0);
+options = sdpsettings('solver','QuadProg','verbose',3);
 
 %% Objective / cost function
         
@@ -117,7 +117,7 @@ C2=[...
 
 if task.adjacentveh && task.ego==1                                          % infront of first vehicle
     C3 = y(task.zone.ixov) <= ...
-        (task.A.y0 - road.lanewidth - road.lanewidth/task.A.lr*(task.s(task.zone.ixov)-...
+        (task.A.y0 - road.lanewidth + road.lanewidth/task.A.lr*(task.s(task.zone.ixov)-...
         task.A.x0 + (vL-task.A.vx)*t(task.zone.ixov)*St))/Sy;
 elseif task.adjacentveh && task.ego==2                                      % Behind first veh and infront of second vehicle
     C3 = [y(task.zone.ixov) <= ...
