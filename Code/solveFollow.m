@@ -13,6 +13,7 @@ dt = task.dt;
 N = task.N;
 yr = task.E.yref;
 vr = task.E.vref;
+vL = task.L.vx;
 
 %% Yalmip
 
@@ -81,7 +82,7 @@ res.status  = resOpt;
 res.solvertime = solvertime;
 res.cost.total = value(cost);
 res.yE      = value(y);                                                     %[m] lateral position
-res.vEx     = value(vx);                                                    %[m/s] longitudinal speed
+res.vEx     = value(vx + vL);                                                    %[m/s] longitudinal speed
 res.vEy     = [value(vy); value(vy(N-1))];                                  %[m/s] lateral speed
 res.ts      = ones(N,1)*dt;                                                 %[s] time samples
 res.t       = [0;cumsum(res.ts(1:N-1))];                                    %[s] travel time

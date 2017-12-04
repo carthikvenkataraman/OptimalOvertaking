@@ -115,18 +115,18 @@ C2=[...
 % elseif task.oncomingveh && ~task.egofirst % Not of interest, ONCOMING
 %     C3=y(task.zone.ixov) <= (task.O.y0 - road.lanewidth + road.lanewidth/task.O.lf*(task.s(task.zone.ixov)-task.O.x0 + (vL-task.O.vx)*t(task.zone.ixov)*St))/Sy;
 
-if task.adjacentveh && task.ego==1                          % infront of first vehicle
+if task.adjacentveh && task.ego==1                                          % infront of first vehicle
     C3 = y(task.zone.ixov) <= ...
         (task.A.y0 - road.lanewidth - road.lanewidth/task.A.lr*(task.s(task.zone.ixov)-...
         task.A.x0 + (vL-task.A.vx)*t(task.zone.ixov)*St))/Sy;
-elseif task.adjacentveh && task.ego==2                      % Behind first veh and infront of second vehicle
+elseif task.adjacentveh && task.ego==2                                      % Behind first veh and infront of second vehicle
     C3 = [y(task.zone.ixov) <= ...
         (task.A.y0 + road.lanewidth - road.lanewidth/task.A.lr*(task.s(task.zone.ixov)-...
         task.A.x0 + (vL-task.A.vx)*t(task.zone.ixov)*St))/Sy...
           y(task.zone.ixov) <= ...
           (task.A2.y0 - road.lanewidth - road.lanewidth/task.A2.lr*(task.s(task.zone.ixov)-...
           task.A2.x0 + (vL-task.A2.vx)*t(task.zone.ixov)*St))/Sy];    
-elseif task.adjacentveh && task.ego==3                     % Behind 2:nd vehicle
+elseif task.adjacentveh && task.ego==3                                      % Behind 2:nd vehicle
     C3 = y(task.zone.ixov) <=...
         (task.A2.y0 + road.lanewidth - road.lanewidth/task.A2.lr*(task.s(task.zone.ixov)-...
          task.A2.x0 + (vL-task.A2.vx)*t(task.zone.ixov)*St))/Sy;    
@@ -144,12 +144,12 @@ res             = struct;
 res.status      = resOpt;
 res.solvertime  = solvertime;
 res.cost.total  = value(cost);
-res.yE          = value(y*Sy);                                       % [m] lateral position
-res.vEx         = value(1./(z*Sz)+vL);                               % [m/s] longitudinal speed
-res.vEy         = [value(dy); value(dy(N-1))]*Sdy.*(res.vEx-vL);     % [m/s] lateral speed
-res.ts          = value(ds./(res.vEx-vL));                           % [s] time samples
-res.t           = [0;cumsum(res.ts(1:N-1))];                         % [s] travel time
-res.xE          = task.s + vL*res.t;                                 % [m] longitudinal position
+res.yE          = value(y*Sy);                                              % [m] lateral position
+res.vEx         = value(1./(z*Sz)+vL);                                      % [m/s] longitudinal speed
+res.vEy         = [value(dy); value(dy(N-1))]*Sdy.*(res.vEx-vL);            % [m/s] lateral speed
+res.ts          = value(ds./(res.vEx-vL));                                  % [s] time samples
+res.t           = [0;cumsum(res.ts(1:N-1))];                                % [s] travel time
+res.xE          = task.s + vL*res.t;                                        % [m] longitudinal position
 res.topt        = value(t)*St;
 res.weights     = [Wz Wy Wu Wdy Wdu Wddy];
 res.z           = value(z*Sz);
