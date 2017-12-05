@@ -66,7 +66,7 @@ else
     t = zeros(N,1);
 end
 
-options = sdpsettings('solver','QuadProg','verbose',3);
+options = sdpsettings('solver','QuadProg','verbose', 0);
 
 %% Objective / cost function
         

@@ -1,5 +1,6 @@
 % Defines the scenario you want to run, invokes functions to solve the problem and plot the solution.
-clear; clc; close all;
+clear; clc; 
+% close all;
 
 %% Add paths
 addpath(genpath(fullfile(fileparts(mfilename('fullpath')), 'Utils')));
@@ -48,14 +49,14 @@ if task.adjacentveh
     task.A           = standardcar;
     task.A.vx        = speedAdjVeh1;                                        % [m/s] speed
     task.A.x0        = posAdjVeh1;                                          % [m] initial longitudinal position
-    task.A.y0        = task.road.lanewidth;                                 % [m] initial lateral position
+    task.A.y0        = 1.5*task.road.lanewidth;                                 % [m] initial lateral position
 end
 
 if task.adjacentveh2
     task.A2          = standardcar;
     task.A2.vx       = speedAdjVeh2;                                        % [m/s] speed
     task.A2.x0       = posAdjVeh2;                                          % [m] initial longitudinal position
-    task.A2.y0       = task.road.lanewidth;                                 % [m] initial lateral position
+    task.A2.y0       = 1.5*task.road.lanewidth;                                 % [m] initial lateral position
 end
 
 %% Model Predictive Control (MPC)
@@ -67,13 +68,22 @@ for i=1:numSteps
     init;
     
     overtake   = solveOvertake(task);                                       % Optimal overtaking maneuver
-    task.dt    = overtake.t(end)/task.N;
-    task.t     = (0:task.dt:overtake.t(end))';
+    if ~overtake.status.problem
+        endTime = overtake.t(end);
+    else
+        endTime = 30;
+    end
+    task.dt    = endTime/task.N;
+    task.t     = (0:task.dt:endTime)';
     follow     = solveFollow(task);                                         % Optimal following maneuver
     
     % To overtake or not to overtake    
     overtakeCost = realmax('single');
     followCost   = realmax('single');
+    
+    if overtake.status.problem && follow.status.problem
+        error('No feasible solutions for both follow and overtake');
+    end
     
     if ~overtake.status.problem
         overtakeCost = sum((overtake.vEx-task.E.vref).^2)*w(1) +...
@@ -81,6 +91,8 @@ for i=1:numSteps
             sum(overtake.vEy.^2)*w(3) +...
             sum(overtake.Ax.^2)*w(4) + sum(overtake.Ay.^2)*w(5) +...
             sum(overtake.Jx.^2)*w(6);
+    else
+        warning('Overtake infeasible');
     end
 
     if ~follow.status.problem
@@ -89,11 +101,13 @@ for i=1:numSteps
             sum(follow.vEy.^2)*w(3) +...
             sum(follow.Ax.^2)*w(4) + sum(follow.Ay.^2)*w(5) +...
             sum(follow.Jx.^2)*w(6);
+    else
+        warning('Following infeasible');
     end
         
     if followCost - overtakeCost > eps(followCost)
         robustness = robustness+1;
-        if robustness >= 5;
+        if robustness >= 5
             decision = overtake;
         else
             decision = follow;
@@ -106,6 +120,8 @@ for i=1:numSteps
     % Update scenario for next time step
     task = UpdateScenario(task, decision);
 end
+
+animate_res;
 
 %% Remove added paths
 rmpath(genpath(fullfile(fileparts(mfilename('fullpath')), 'Utils')));
